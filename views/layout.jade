@@ -1,0 +1,61 @@
+doctype 5
+html(lang="en")
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src='/socket.io/socket.io.js')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js')
+    script(type='text/javascript')
+      window.onload = function () {
+        // Connect to socket.io
+        var socket = io.connect();
+        $i = 0;
+        // React to a received message
+        socket.on('ping', function (data) {
+          
+          // Modify the DOM to show the message
+          if($i === 0){
+            $('#msg').remove();
+            $("#content").prepend("<div class='row'></div>");
+          }
+          
+          if(data.photo === "none") {
+            var content = "<a target='_blank' href='" + data.url + "'><blockquote><p>" + data.text + "</p><small>@" + data.user + "</small></blockquote></a>";
+            $(content).hide().insertAfter("#content div:first").fadeIn(300);
+          }
+          else{
+            var image = new Image();
+            image.src = data.photo;
+
+            image.onload = function(){
+              $i++;
+              if ($i % 4 === 1){
+                $("#content").prepend("<div class='row'></div>");
+                if($i >= 28){
+                  $('#content .row').last().remove();
+                }
+                if($i >= 100){
+                  $('blockquote').last().remove();
+                }
+              }
+              var content = "<a target='_blank' href='" + data.url + "'><div class='span3 image' style='position:relative;height:220px;background-image:url(" + this.src + ");background-size: cover;'><p style='position: absolute;width: 200px;bottom: 0;z-index: 50;background-color: rgba(255, 255, 255, 0.7);padding: 0 10px;display: none;'>" + data.text + "</p></div></a>";
+              $(content).hide().appendTo("#content div:first").fadeIn(300);
+              $('.image').hover(function() {$(this).children('p').fadeIn(300);}, function() {$(this).children('p').fadeOut(500);});
+            }
+          }
+        });
+      };
+  body
+    .container
+      block title
+      block content
+  script(type='text/javascript')
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-306086-17']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
